@@ -1,0 +1,25 @@
+﻿USE [RTF_Db]
+GO
+/****** Object:  UserDefinedFunction [dbo].[CalculateDistance]    Script Date: 2/8/2025 5:25:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER FUNCTION [dbo].[CalculateDistance](
+    @lat1 FLOAT, @lon1 FLOAT,
+    @lat2 FLOAT, @lon2 FLOAT
+)
+RETURNS FLOAT
+AS
+BEGIN
+    DECLARE @R FLOAT = 6371; -- Earth's radius in KM
+    DECLARE @lat FLOAT = RADIANS(@lat2 - @lat1);
+    DECLARE @lon FLOAT = RADIANS(@lon2 - @lon1);
+
+    DECLARE @a FLOAT = SIN(@lat / 2) * SIN(@lat / 2) +
+                      COS(RADIANS(@lat1)) * COS(RADIANS(@lat2)) *
+                      SIN(@lon / 2) * SIN(@lon / 2);
+    DECLARE @c FLOAT = 2 * ATN2(SQRT(@a), SQRT(1 - @a));
+    
+    RETURN @R * @c;
+END;

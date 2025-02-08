@@ -1,0 +1,49 @@
+﻿USE [RTF_Db]
+GO
+/****** Object:  UserDefinedFunction [dbo].[CalculateHeatPoints]    Script Date: 2/8/2025 5:25:00 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER FUNCTION [dbo].[CalculateHeatPoints]()
+RETURNS @HeatPoints TABLE (
+    AvgLatitude FLOAT,
+    AvgLongitude FLOAT,
+    Intensity INT
+)
+AS
+BEGIN
+    -- Temp table to store visited locations and their cluster
+    DECLARE @Cluster TABLE (
+        ClusterId INT IDENTITY(1,1),
+        Latitude FLOAT,
+        Longitude FLOAT
+    );
+
+    -- Insert unique clusters
+    INSERT INTO @Cluster (Latitude, Longitude)
+    SELECT 
+        AVG(l1.Latitude) AS AvgLatitude,
+        AVG(l1.Longitude) AS AvgLongitude
+    FROM Locations l1
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM Locations l2
+        WHERE l2.Id < l1.Id
+        AND dbo.CalculateDistance(l1.Latitude, l1.Longitude, l2.Latitude, l2.Longitude) <= 20
+    )
+    GROUP BY l1.Id;
+
+    -- Insert the final result with intensity
+    INSERT INTO @HeatPoints (AvgLatitude, AvgLongitude, Intensity)
+    SELECT 
+        c.Latitude AS AvgLatitude,
+        c.Longitude AS AvgLongitude,
+        COUNT(*) AS Intensity
+    FROM @Cluster c
+    JOIN Locations l
+    ON dbo.CalculateDistance(c.Latitude, c.Longitude, l.Latitude, l.Longitude) <= 20
+    GROUP BY c.Latitude, c.Longitude;
+
+    RETURN;
+END;
