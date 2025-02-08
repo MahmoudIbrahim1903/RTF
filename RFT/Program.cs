@@ -76,10 +76,8 @@ var serviceProvider = services.BuildServiceProvider();
 using (var scope = serviceProvider.CreateScope())
 {
     var repo = scope.ServiceProvider.GetRequiredService<LocationsRepository>();
-
-    var locations = repo.GetLocations();
-    var groupedLocations = Helper.GroupLocations(locations);
-    var x = Helper.GetHeatPoints(groupedLocations);
+    
+    var x = repo.GetHeatPointsFromSql();
 
     Console.WriteLine(JsonSerializer.Serialize(x));
 }

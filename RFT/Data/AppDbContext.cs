@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace RFT.Data
 {
@@ -9,5 +10,14 @@ namespace RFT.Data
         }
 
         public DbSet<Location> Locations { get; set; }
+        public DbSet<HeatPoint> HeatPoints { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder
+            .Entity<HeatPoint>()
+            .HasNoKey()  // TVFs do not have primary keys
+            .ToFunction("CalculateHeatPoints");
+        }
     }
 }

@@ -78,6 +78,11 @@ namespace RFT
 
             return result;
         }
+
+        public List<HeatPoint> GetHeatPointsFromSql()
+        {
+            return _context.HeatPoints.ToList();
+        }
     }
 
     public class LocationGroup
